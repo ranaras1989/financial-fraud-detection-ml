@@ -197,3 +197,12 @@ XGBoost performed significantly better on this tabular fraud detection problem. 
 The final selected threshold of 0.4 was chosen because fraud detection is a recall-sensitive problem. This threshold allowed the model to detect 91.3% of fraud cases while keeping false positives very low.
 
 This project shows a complete machine learning workflow from baseline modeling to final business-aware model selection.
+
+## Streamlit App
+
+This project also includes a Streamlit app for real-time fraud risk prediction.
+
+To run the app locally:
+
+```bash
+streamlit run app.py
