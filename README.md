@@ -1,103 +1,87 @@
-# Financial Fraud Detection using Machine Learning and XGBoost
+# Financial Fraud Detection Using Machine Learning and XGBoost
 
 ## Project Overview
 
-This project builds a financial fraud detection model using the PaySim synthetic financial transaction dataset.
+This project builds a machine learning model to identify fraudulent financial transactions using the PaySim synthetic mobile money transaction dataset.
 
-The main goal is to detect fraudulent transactions in a highly imbalanced dataset. Since fraud cases are rare, this project focuses on evaluation metrics beyond accuracy, especially recall, precision, F1-score, confusion matrix, and threshold tuning.
+Fraud detection is a highly imbalanced classification problem: most transactions are legitimate, while fraud cases are rare. Because of that, this project focuses on precision, recall, F1-score, confusion matrix results, and threshold tuning instead of relying only on accuracy.
 
-The project compares a baseline Logistic Regression model with XGBoost and then improves the final model using hyperparameter tuning and probability threshold optimization.
-
----
+The workflow compares a baseline Logistic Regression model with XGBoost, then improves the final XGBoost model using hyperparameter tuning and probability threshold optimization.
 
 ## Business Problem
 
-Financial fraud detection is a high-risk classification problem where missing fraud cases can lead to serious financial loss.
+In financial fraud detection, false negatives are costly because they represent fraudulent transactions that were missed by the model. At the same time, too many false positives can create unnecessary manual reviews.
 
-In this type of problem, accuracy alone can be misleading because the dataset is highly imbalanced. A model can achieve high accuracy by predicting most transactions as non-fraud, but still fail to detect actual fraud cases.
+The goal of this project is to:
 
-Therefore, this project focuses on:
-
-* Detecting as many fraud cases as possible
-* Reducing false negatives
-* Keeping false positives low
-* Improving precision, recall, and F1-score
-* Selecting a business-friendly probability threshold
-
----
+- Detect as many fraud cases as possible
+- Reduce false negatives
+- Keep false positives reasonably low
+- Improve recall, precision, and F1-score
+- Choose a practical probability threshold for fraud prediction
 
 ## Dataset
 
 Dataset used: PaySim Synthetic Financial Transaction Dataset
 
-The dataset contains simulated mobile money transactions and includes features such as:
+The dataset contains simulated mobile money transactions with features such as:
 
-* Transaction type
-* Transaction amount
-* Sender old and new balance
-* Receiver old and new balance
-* Fraud label
+- Transaction type
+- Transaction amount
+- Sender old and new balance
+- Receiver old and new balance
+- Existing fraud flag
+- Fraud label
 
-Due to local system memory constraints, this project uses the first 100,000 rows from the dataset.
+The dataset file is not included in this repository because of file size. Download the PaySim CSV separately and place it in a `data/` folder:
 
-The dataset file is not included in this repository because of file size. Please download the dataset separately and place the CSV file in the project folder.
+```text
+data/PS_20174392719_1491204439457_log.csv
+```
 
----
+Due to local memory constraints, the notebook uses the first 100,000 rows.
 
 ## Project Workflow
 
-The project follows a complete supervised machine learning workflow:
-
 1. Load the dataset
-2. Understand the data structure
-3. Check class imbalance
-4. Perform data preprocessing
-5. Drop unnecessary ID columns
-6. Encode categorical variables
-7. Split data into training and testing sets
-8. Train a baseline Logistic Regression model
-9. Train an XGBoost model
-10. Handle class imbalance using `scale_pos_weight`
+2. Explore the data structure
+3. Check fraud and non-fraud class distribution
+4. Drop unnecessary ID columns
+5. Encode categorical variables
+6. Split data into training and testing sets
+7. Train a baseline Logistic Regression model
+8. Train an untuned XGBoost model
+9. Handle class imbalance using `scale_pos_weight`
+10. Evaluate models with precision, recall, F1-score, and confusion matrix
 11. Perform cross-validation
-12. Tune hyperparameters using `RandomizedSearchCV`
-13. Tune probability threshold
-14. Evaluate final model using precision, recall, F1-score, and confusion matrix
-15. Select the best final model
-
----
+12. Tune XGBoost hyperparameters with `RandomizedSearchCV`
+13. Tune the probability threshold
+14. Select the final model based on business tradeoffs
 
 ## Models Used
 
-### 1. Baseline Logistic Regression
+### Baseline Logistic Regression
 
-Logistic Regression was used as a simple baseline model.
+Logistic Regression was used as a simple baseline model. It achieved high accuracy, but it failed to detect most fraud cases, showing why accuracy is not enough for imbalanced fraud detection.
 
-The baseline model achieved very high accuracy, but it failed to detect most fraud cases. This showed that accuracy is not a reliable metric for highly imbalanced fraud detection problems.
+### Untuned XGBoost
 
-### 2. Untuned XGBoost
+XGBoost performed much better than Logistic Regression and detected most fraud cases, but it produced more false positives.
 
-XGBoost performed much better than Logistic Regression. It was able to detect most fraud cases while reducing false positives.
+### Tuned XGBoost
 
-### 3. Tuned XGBoost
-
-Hyperparameter tuning was performed using `RandomizedSearchCV` with `StratifiedKFold`.
-
-The final tuned XGBoost model was selected as the best model.
-
----
+The final model used XGBoost with hyperparameter tuning and a custom probability threshold. This produced the best balance between recall and false positives.
 
 ## Final Model
 
-Final selected model:
-
-**Tuned XGBoost with probability threshold = 0.4**
+Final selected model: **Tuned XGBoost with probability threshold = 0.4**
 
 ### Final Confusion Matrix
 
 | Metric          |  Value |
 | --------------- | -----: |
-| True Negatives  | 19,967 |
-| False Positives |     10 |
+| True Negatives  | 19,968 |
+| False Positives |      9 |
 | False Negatives |      2 |
 | True Positives  |     21 |
 
@@ -105,13 +89,11 @@ Final selected model:
 
 | Metric    | Value |
 | --------- | ----: |
-| Precision | 67.7% |
+| Precision | 70.0% |
 | Recall    | 91.3% |
-| F1-score  | 77.8% |
+| F1-score  | 79.2% |
 
-The final model correctly detected 21 out of 23 fraud cases while producing only 10 false positives.
-
----
+The final model correctly detected 21 out of 23 fraud cases while producing only 9 false positives.
 
 ## Model Comparison
 
@@ -119,45 +101,45 @@ The final model correctly detected 21 out of 23 fraud cases while producing only
 | ----------------------------- | --------------: | --------------: | -------------: | --------: | -----: | -------: |
 | Baseline Logistic Regression  |               0 |              22 |              1 |     1.000 |  0.043 |    0.083 |
 | Untuned XGBoost               |              85 |               2 |             21 |     0.198 |  0.913 |    0.326 |
-| Tuned XGBoost + Threshold 0.4 |              10 |               2 |             21 |     0.677 |  0.913 |    0.778 |
+| Tuned XGBoost + Threshold 0.4 |               9 |               2 |             21 |     0.700 |  0.913 |    0.792 |
 
----
+## Streamlit App
 
-## Key Learnings
+This repository includes a Streamlit app for real-time fraud risk prediction using the saved tuned XGBoost model.
 
-This project demonstrates several important machine learning concepts:
+To run the app locally:
 
-* Accuracy can be misleading in imbalanced classification problems
-* Fraud detection should focus strongly on recall and false negatives
-* Logistic Regression is useful as a baseline model
-* XGBoost performs strongly on tabular financial transaction data
-* `scale_pos_weight` helps handle class imbalance in XGBoost
-* Hyperparameter tuning can significantly improve model performance
-* Threshold tuning is important for business-sensitive classification problems
+```bash
+streamlit run app.py
+```
 
----
+The app loads:
+
+- `tuned_xgboost_fraud_model.pkl`
+- `feature_columns.pkl`
+- `final_threshold.pkl`
 
 ## Technologies Used
 
-* Python
-* Pandas
-* NumPy
-* Matplotlib
-* Scikit-learn
-* XGBoost
-* Joblib
-
----
+- Python
+- Pandas
+- NumPy
+- Matplotlib
+- Scikit-learn
+- XGBoost
+- Joblib
+- Streamlit
 
 ## How to Run the Project
 
-1. Clone this repository
+1. Clone this repository:
 
 ```bash
-git clone <your-repository-url>
+git clone https://github.com/ranaras1989/financial-fraud-detection-ml.git
+cd financial-fraud-detection-ml
 ```
 
-2. Install required dependencies
+2. Install dependencies:
 
 ```bash
 pip install -r requirements.txt
@@ -165,44 +147,50 @@ pip install -r requirements.txt
 
 3. Download the PaySim dataset from Kaggle.
 
-4. Place the CSV file in the project folder.
+4. Place the CSV file in the `data/` folder:
+
+```text
+data/PS_20174392719_1491204439457_log.csv
+```
 
 5. Open and run the notebook:
 
 ```text
-fraud_detection_xgboost_project.ipynb
+FraudClassificationFinal.ipynb
 ```
 
----
+6. Run the Streamlit app:
+
+```bash
+streamlit run app.py
+```
 
 ## Repository Structure
 
 ```text
 financial-fraud-detection-ml/
-│
-├── fraud_detection_xgboost_project.ipynb
-├── README.md
-├── requirements.txt
-└── .gitignore
+|-- FraudClassificationFinal.ipynb
+|-- app.py
+|-- tuned_xgboost_fraud_model.pkl
+|-- feature_columns.pkl
+|-- final_threshold.pkl
+|-- requirements.txt
+|-- README.md
+|-- .gitignore
 ```
 
----
+## Key Learnings
+
+- Accuracy can be misleading in imbalanced classification problems.
+- Fraud detection should prioritize recall and false negatives.
+- Logistic Regression is useful as a baseline model.
+- XGBoost performs strongly on tabular fraud detection data.
+- `scale_pos_weight` helps XGBoost handle class imbalance.
+- Hyperparameter tuning can improve model performance.
+- Threshold tuning helps align model behavior with business goals.
 
 ## Final Conclusion
 
-The baseline Logistic Regression model achieved high accuracy but failed to detect most fraud cases due to severe class imbalance.
+The baseline Logistic Regression model achieved high accuracy but missed most fraud cases. XGBoost performed significantly better for this tabular fraud detection problem.
 
-XGBoost performed significantly better on this tabular fraud detection problem. After hyperparameter tuning and threshold tuning, the final tuned XGBoost model achieved a strong balance between fraud detection and false alarm reduction.
-
-The final selected threshold of 0.4 was chosen because fraud detection is a recall-sensitive problem. This threshold allowed the model to detect 91.3% of fraud cases while keeping false positives very low.
-
-This project shows a complete machine learning workflow from baseline modeling to final business-aware model selection.
-
-## Streamlit App
-
-This project also includes a Streamlit app for real-time fraud risk prediction.
-
-To run the app locally:
-
-```bash
-streamlit run app.py
+After hyperparameter tuning and threshold tuning, the final tuned XGBoost model achieved strong recall while keeping false positives low. The selected threshold of 0.4 detected 91.3% of fraud cases and provided a practical balance for a recall-sensitive fraud detection use case.
